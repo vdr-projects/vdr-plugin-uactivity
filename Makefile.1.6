@@ -30,9 +30,17 @@ TMPDIR ?= /tmp
 
 include $(VDRDIR)/Make.global
 
-### Allow user defined options to overwrite defaults:
+### Allow global user defined options to overwrite defaults:
 
 -include $(VDRDIR)/Make.config
+
+### Allow user defined options to overwrite defaults:
+
+-include Make.config
+
+### Default values:
+
+PLUGIN_UACTIVITY_COMMAND?=echo vdr-uactivity -r %1$$s -o %2$$s -v %3$$s -C %4$$s -c %5$$s -R %6$$s | at now
 
 ### The version number of VDR's plugin API (taken from VDR's "config.h"):
 
@@ -47,11 +55,11 @@ PACKAGE = vdr-$(ARCHIVE)
 
 INCLUDES += -I$(VDRDIR)/include
 
-DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
+DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DUACTIVITY_COMMAND='"$(PLUGIN_UACTIVITY_COMMAND)"'
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o
+OBJS = $(PLUGIN).o run.o
 
 ### The main target:
 

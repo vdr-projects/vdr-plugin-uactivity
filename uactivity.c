@@ -7,35 +7,30 @@
  */
 
 #include <getopt.h>
+#include <time.h>
 #include <vdr/plugin.h>
 #include <vdr/osdbase.h>
-#include <vdr/keys.h>
 #include <vdr/shutdown.h>
+#include "run.h"
 
 #define STRINGIFYX(x) #x
 #define STRINGIFY(x) STRINGIFYX(x)
 #define WATCHDOG 0
 
-static const char *VERSION        = "0.0.1";
+static const char *VERSION        = "0.0.1pre";
 static const char *DESCRIPTION    = trNOOP("running shellscipts based upton user aktivity changes");
-
-enum eOrgin {oStartUp, oShutDown, oRunning};
 
 class cPluginUactivity : public cPlugin {
 private:
   // Add any member variables or functions you may need here.
-  void Call(eOrgin Orgin, bool Active=false);
-  void Call();
   bool LastActivity;
-  bool WatchdogTimer;
-  char *myConfigDirectory;
-  char *myCacheDirectory;
-  char *myResourceDirectory;
+  int WatchdogTimer;
+  time_t LastTime;
 public:
   cPluginUactivity(void);
-  virtual ~cPluginUactivity();
-  virtual const char *Version(void) { return VERSION; }
-  virtual const char *Description(void) { return tr(DESCRIPTION); }
+  virtual ~cPluginUactivity() { };
+  virtual const char *Version(void) { return VERSION; };
+  virtual const char *Description(void) { return tr(DESCRIPTION); };
   virtual const char *CommandLineHelp(void);
   virtual bool ProcessArgs(int argc, char *argv[]);
   virtual bool Initialize(void) { return true; };
@@ -52,24 +47,18 @@ public:
   virtual bool Service(const char *Id, void *Data = NULL) { return false; };
   virtual const char **SVDRPHelpPages(void) { return NULL; };
   virtual cString SVDRPCommand(const char *Command, const char *Option, int &ReplyCode) { return NULL; };
-  };
+};
 
 class cPluginUactivityMenu : public cOsdMenu {
-private:
-  cKey myKey;
-  void Call(eKeys Key) {
-    esyslog("%s: Key -> %s", PLUGIN_NAME_I18N, myKey.ToString(Key));
-  }
-
 protected:
   virtual eOSState ProcessKey(eKeys Key) {
     eOSState state = cOsdMenu::ProcessKey(Key);
     if (state == osUnknown)
       if ((Key >= kUp) && (Key < kNone)) {
-        Call(Key);
+        Run.Call(Key);
         return osEnd;
       }
-    return osContinue;
+    return state;
   }
 public:
   cPluginUactivityMenu() : cOsdMenu(PLUGIN_NAME_I18N) { }
@@ -80,40 +69,7 @@ cPluginUactivity::cPluginUactivity(void)
   // Initialize any member variables here.
   // DON'T DO ANYTHING ELSE THAT MAY HAVE SIDE EFFECTS, REQUIRE GLOBAL
   // VDR OBJECTS TO EXIST OR PRODUCE ANY OUTPUT!
-  LastActivity = false;
   WatchdogTimer = WATCHDOG;
-}
-
-cPluginUactivity::~cPluginUactivity()
-{
-  // Clean up after yourself!
-  if (myConfigDirectory) free(myConfigDirectory);
-  if (myCacheDirectory) free(myCacheDirectory);
-  if (myResourceDirectory) free(myResourceDirectory);
-}
-
-void cPluginUactivity::Call(eOrgin Orgin, bool Active)
-{
-  char *OrginStr = NULL;
-  if (Orgin == oStartUp) OrginStr = strdup("startup");
-  else if (Orgin == oShutDown) OrginStr = strdup("shutdown");
-  else if (Orgin == oRunning) OrginStr = strdup("running");
-
-  char *ActivityStatusStr = NULL;
-  if (Active)
-    ActivityStatusStr = strdup("true");
-  else
-    ActivityStatusStr = strdup("false");
-
-  esyslog("%s: Orgin -> %s Activity -> %s", PLUGIN_NAME_I18N, OrginStr, ActivityStatusStr);
-
-  if (ActivityStatusStr) free(ActivityStatusStr);
-  if (OrginStr) free(OrginStr);
-}
-
-void cPluginUactivity::Call()
-{
-  esyslog("%s: Watchdog", PLUGIN_NAME_I18N);
 }
 
 const char *cPluginUactivity::CommandLineHelp(void)
@@ -129,7 +85,7 @@ bool cPluginUactivity::ProcessArgs(int argc, char *argv[])
 {
   // Implement command line argument processing here if applicable.
   static struct option long_options[] = {
-    {"watchdog-timer", required_argument, NULL, 'w'},
+    {"watchdog", required_argument, NULL, 'w'},
     { NULL }
   };
 
@@ -137,10 +93,8 @@ bool cPluginUactivity::ProcessArgs(int argc, char *argv[])
   while ((c = getopt_long(argc, argv, "w:", long_options, NULL)) != -1) {
     switch (c) {
       case 'w': if (isnumber(optarg))
-                  if (atoi(optarg) > 0)
-                    WatchdogTimer = atoi(optarg);
-                  else
-                    return false;
+                  if (atoi(optarg) > 0) WatchdogTimer = atoi(optarg);
+                  else return false;
                 else
                   return false;
                 break;
@@ -153,25 +107,29 @@ bool cPluginUactivity::ProcessArgs(int argc, char *argv[])
 bool cPluginUactivity::Start(void)
 {
   // Start any background activities the plugin shall perform.
-  myConfigDirectory = strdup(ConfigDirectory(PLUGIN_NAME_I18N));
+  Run.SetConfigDirectory(ConfigDirectory(PLUGIN_NAME_I18N));
 #if VDRVERSNUM >= 10729
-  myCacheDirectory = strdup(CacheDirectory(PLUGIN_NAME_I18N));
-  myResourceDirectory = strdup(ResourceDirectory(PLUGIN_NAME_I18N));
+  Run.SetCacheDirectory(CacheDirectory(PLUGIN_NAME_I18N));
+  Run.SetResourceDirectory(ResourceDirectory(PLUGIN_NAME_I18N));
 #else
-  myCacheDirectory = strdup(myConfigDirectory);
-  myResourceDirectory = strdup(myConfigDirectory);
+  Run.SetCacheDirectory(ConfigDirectory(PLUGIN_NAME_I18N));
+  Run.SetResourceDirectory(ConfigDirectory(PLUGIN_NAME_I18N));
 #endif
 
   bool ActivityStatus = !ShutdownHandler.IsUserInactive();
-  Call(oStartUp, ActivityStatus);
   LastActivity = ActivityStatus;
+  Run.Call(oStartUp, ActivityStatus);
+
+  time(&LastTime);
+  if (WatchdogTimer > 0) Run.Call();
+
   return true;
 }
 
 void cPluginUactivity::Stop(void)
 {
   // Stop any background activities the plugin is performing.
-  Call(oShutDown);
+  Run.Call(oShutDown);
 }
 
 void cPluginUactivity::MainThreadHook(void)
@@ -180,8 +138,17 @@ void cPluginUactivity::MainThreadHook(void)
   // WARNING: Use with great care - see PLUGINS.html!
   bool ActivityStatus = !ShutdownHandler.IsUserInactive();
   if (ActivityStatus != LastActivity) {
-    Call(oRunning, ActivityStatus);
     LastActivity = ActivityStatus;
+    Run.Call(oRunning, ActivityStatus);
+  }
+
+  if (WatchdogTimer > 0) {
+    time_t Seconds;
+    time(&Seconds);
+    if (difftime(Seconds, LastTime) >= WatchdogTimer) {
+      time(&LastTime);
+      Run.Call();
+    }
   }
 }
 

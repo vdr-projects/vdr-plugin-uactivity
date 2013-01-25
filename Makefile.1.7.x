@@ -20,6 +20,7 @@ PKGCFG = $(if $(VDRDIR),$(shell pkg-config --variable=$(1) $(VDRDIR)/vdr.pc),$(s
 LIBDIR = $(call PKGCFG,libdir)
 LOCDIR = $(call PKGCFG,locdir)
 PLGCFG = $(call PKGCFG,plgcfg)
+BINDIR = $(call PKGCFG,bindir)
 #
 TMPDIR ?= /tmp
 
@@ -32,9 +33,17 @@ export CXXFLAGS = $(call PKGCFG,cxxflags)
 
 APIVERSION = $(call PKGCFG,apiversion)
 
-### Allow user defined options to overwrite defaults:
+### Allow global user defined options to overwrite defaults:
 
 -include $(PLGCFG)
+
+### Allow user defined options to overwrite defaults:
+
+-include Make.config
+
+### Default values:
+
+PLUGIN_UACTIVITY_COMMAND?=echo vdr-uactivity -r %1$$s -o %2$$s -v %3$$s -C %4$$s -c %5$$s -R %6$$s | at now
 
 ### The name of the distribution archive:
 
@@ -49,11 +58,11 @@ SOFILE = libvdr-$(PLUGIN).so
 
 INCLUDES +=
 
-DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
+DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DUACTIVITY_COMMAND='"$(PLUGIN_UACTIVITY_COMMAND)"'
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o
+OBJS = $(PLUGIN).o run.o
 
 ### The main target:
 
@@ -107,7 +116,10 @@ $(SOFILE): $(OBJS)
 install-lib: $(SOFILE)
 	install -D $^ $(DESTDIR)$(LIBDIR)/$^.$(APIVERSION)
 
-install: install-lib install-i18n
+install-bin:
+	install -D script/vdr-uactivity $(DESTDIR)$(BINDIR)/vdr-uactivity
+
+install: install-lib install-i18n install-bin
 
 dist: $(I18Npo) clean
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
