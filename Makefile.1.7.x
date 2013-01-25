@@ -21,6 +21,8 @@ LIBDIR = $(call PKGCFG,libdir)
 LOCDIR = $(call PKGCFG,locdir)
 PLGCFG = $(call PKGCFG,plgcfg)
 BINDIR = $(call PKGCFG,bindir)
+CFGDIR = $(call PKGCFG,configdir)
+
 #
 TMPDIR ?= /tmp
 
@@ -43,7 +45,7 @@ APIVERSION = $(call PKGCFG,apiversion)
 
 ### Default values:
 
-PLUGIN_UACTIVITY_COMMAND?=echo vdr-uactivity -r %1$$s -o %2$$s -v %3$$s -C %4$$s -c %5$$s -R %6$$s | at now
+PLUGIN_UACTIVITY_COMMAND?=vdr-uactivity -r %1$$s -o %2$$s -v %3$$s -C %4$$s -c %5$$s -R %6$$s
 
 ### The name of the distribution archive:
 
@@ -117,7 +119,15 @@ install-lib: $(SOFILE)
 	install -D $^ $(DESTDIR)$(LIBDIR)/$^.$(APIVERSION)
 
 install-bin:
+ifndef PLUGIN_UACTIVITY_NOINSTALL_BIN
 	install -D script/vdr-uactivity $(DESTDIR)$(BINDIR)/vdr-uactivity
+	install -d $(DESTDIR)$(CFGDIR)/plugins/$(PLUGIN)/activity
+	install script/uactivity/activity/* $(DESTDIR)$(CFGDIR)/plugins/$(PLUGIN)/activity
+	install -d $(DESTDIR)$(CFGDIR)/plugins/$(PLUGIN)/key
+	install script/uactivity/key/* $(DESTDIR)$(CFGDIR)/plugins/$(PLUGIN)/key
+	install -d $(DESTDIR)$(CFGDIR)/plugins/$(PLUGIN)/watchdog
+	install script/uactivity/watchdog/* $(DESTDIR)$(CFGDIR)/plugins/$(PLUGIN)/watchdog
+endif
 
 install: install-lib install-i18n install-bin
 

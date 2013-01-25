@@ -1,5 +1,46 @@
 #!/bin/sh
 
-logger -t vdr-uactivity "$1" "$2" "$3" "$4" "$5" "$6"
+# Log to syslog and to stderr
+LOG="mylog"
+
+mylog() {
+  [ -n "$(which logger)" ] && logger -t $(basename ${0}) "${1}"
+  echo "${1}" >&2;
+}
+
+usage(){
+	${LOG} "Usage: $(basename $0) -r <reason activity|key|watchdog> -o <orgin startup|shutdown|running> -v <value>"
+	${LOG} "                     -C <ConfigDirectory> -c <CacheDirectory> -R <ResourceDirectory>"
+	${LOG} "$cmd_error"
+	exit 1
+}
+
+cmd_error=""
+while getopts ":r:o:v:C:c:R:" opt; do
+	case "$opt" in
+		r) PARAM_REASON="$OPTARG";;
+		o) PARAM_ORGIN="$OPTARG";;
+		v) PARAM_VALUE="$OPTARG";;
+		C) PARAM_CONFIGDIRECTORY="$OPTARG";;
+		c) PARAM_CACHEDIRECTORY="$OPTARG";;
+		R) PARAM_RESOURCEDIRECTORY="$OPTARG";;
+		--) break;;
+		\?) cmd_error="$(gettext 'Error: Error parsing Commandline')"; break;;
+	esac
+done
+
+[ -n "$cmd_error" ] && usage
+
+[ -d "${PARAM_CONFIGDIRECTORY}/${PARAM_REASON}" ] || exit 0
+
+hooks="$(find "${PARAM_CONFIGDIRECTORY}/${PARAM_REASON}" -maxdepth 1 -xtype f -name '[0-9][0-9]*' | sort)" 
+for hook in ${hooks}; do
+    if [ -x $hook ]; then
+        $hook $PARAM_ORGIN $PARAM_VALUE "$PARAM_CONFIGDIRECTORY" "$PARAM_CACHEDIRECTORY" "$PARAM_RESOURCEDIRECTORY"
+    else
+        /bin/sh $hook  $PARAM_ORGIN $PARAM_VALUE "$PARAM_CONFIGDIRECTORY" "$PARAM_CACHEDIRECTORY" "$PARAM_RESOURCEDIRECTORY"
+    fi
+    [ $? -ne 0 ] && ${LOG} "error when executing ${hook}"
+done
 
 exit 0
