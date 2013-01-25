@@ -33,12 +33,26 @@ done
 
 [ -d "${PARAM_CONFIGDIRECTORY}/${PARAM_REASON}" ] || exit 0
 
+case "${PARAM_REASON}" in
+	activity)
+		commandline="${PARAM_ORGIN} ${PARAM_VALUE}"
+	;;
+	key)
+		[ "${PARAM_VALUE}" != "_Setup" ] \
+			&& commandline="${PARAM_ORGIN} ${PARAM_VALUE}" \
+			|| commandline="${PARAM_ORGIN} ''"
+	;;
+	watchdog)
+		commandline="${PARAM_ORGIN} ''"
+	;;
+esac
+
 hooks="$(find "${PARAM_CONFIGDIRECTORY}/${PARAM_REASON}" -maxdepth 1 -xtype f -name '[0-9][0-9]*' | sort)" 
 for hook in ${hooks}; do
     if [ -x $hook ]; then
-        $hook $PARAM_ORGIN $PARAM_VALUE "$PARAM_CONFIGDIRECTORY" "$PARAM_CACHEDIRECTORY" "$PARAM_RESOURCEDIRECTORY"
+        eval $hook $commandline "$PARAM_CONFIGDIRECTORY" "$PARAM_CACHEDIRECTORY" "$PARAM_RESOURCEDIRECTORY"
     else
-        /bin/sh $hook  $PARAM_ORGIN $PARAM_VALUE "$PARAM_CONFIGDIRECTORY" "$PARAM_CACHEDIRECTORY" "$PARAM_RESOURCEDIRECTORY"
+        eval /bin/sh $hook  $commandline "$PARAM_CONFIGDIRECTORY" "$PARAM_CACHEDIRECTORY" "$PARAM_RESOURCEDIRECTORY"
     fi
     [ $? -ne 0 ] && ${LOG} "error when executing ${hook}"
 done
