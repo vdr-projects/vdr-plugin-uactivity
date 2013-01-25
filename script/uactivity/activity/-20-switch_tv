@@ -1,0 +1,7 @@
+#!/bin/sh
+
+[ "${2}" = "true" ] \
+  && irsend -d /var/run/lirc/ya_usbir SEND_ONCE TP av \
+  || irsend -d /var/run/lirc/ya_usbir SEND_ONCE TP off
+
+exit 0

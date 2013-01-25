@@ -1,0 +1,24 @@
+#!/bin/sh
+
+case "${1}" in
+  startup)
+    logger -t "uactivity [key/$(basename ${0})]" "key starting up"
+    logger -t "uactivity [key/$(basename ${0})]" "ConfigDirectory:   ${3}"
+    logger -t "uactivity [key/$(basename ${0})]" "CacheDirectory:    ${4}"
+    logger -t "uactivity [key/$(basename ${0})]" "ResourceDirectory: ${5}"
+  ;;
+  shutdown)
+    logger -t "uactivity [key/$(basename ${0})]" "key shutting down"
+    logger -t "uactivity [key/$(basename ${0})]" "ConfigDirectory:   ${3}"
+    logger -t "uactivity [key/$(basename ${0})]" "CacheDirectory:    ${4}"
+    logger -t "uactivity [key/$(basename ${0})]" "ResourceDirectory: ${5}"
+  ;;
+  running)
+    logger -t "uactivity [key/$(basename ${0})]" "key \"${2}\" pressed"
+    logger -t "uactivity [key/$(basename ${0})]" "ConfigDirectory:   ${3}"
+    logger -t "uactivity [key/$(basename ${0})]" "CacheDirectory:    ${4}"
+    logger -t "uactivity [key/$(basename ${0})]" "ResourceDirectory: ${5}"
+  ;;
+esac
+
+exit 0
