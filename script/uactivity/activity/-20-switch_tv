@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ "${2}" = "true" ] \
+([ "${2}" = "true" ] && [ "${1}" != "shutdown" ]) \
   && irsend -d /var/run/lirc/ya_usbir SEND_ONCE TP av \
   || irsend -d /var/run/lirc/ya_usbir SEND_ONCE TP off
 

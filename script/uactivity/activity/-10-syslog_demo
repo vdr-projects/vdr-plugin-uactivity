@@ -5,7 +5,7 @@ case "${1}" in
     logger -t "uactivity [activity/$(basename ${0})]" "activity starting up"
     [ "${2}" = "true" ] \
       && logger -t "uactivity [activity/$(basename ${0})]" "status \"user active\"" \
-      || logger -t "uactivity [activity/$(basename ${0})]" "status \"user inactive\"
+      || logger -t "uactivity [activity/$(basename ${0})]" "status \"user inactive\""
     logger -t "uactivity [activity/$(basename ${0})]" "ConfigDirectory:   ${3}"
     logger -t "uactivity [activity/$(basename ${0})]" "CacheDirectory:    ${4}"
     logger -t "uactivity [activity/$(basename ${0})]" "ResourceDirectory: ${5}"
@@ -14,7 +14,7 @@ case "${1}" in
     logger -t "uactivity [activity/$(basename ${0})]" "activity shutting down"
     [ "${2}" = "true" ] \
       && logger -t "uactivity [activity/$(basename ${0})]" "status \"user active\"" \
-      || logger -t "uactivity [activity/$(basename ${0})]" "status \"user inactive\"
+      || logger -t "uactivity [activity/$(basename ${0})]" "status \"user inactive\""
     logger -t "uactivity [activity/$(basename ${0})]" "ConfigDirectory:   ${3}"
     logger -t "uactivity [activity/$(basename ${0})]" "CacheDirectory:    ${4}"
     logger -t "uactivity [activity/$(basename ${0})]" "ResourceDirectory: ${5}"

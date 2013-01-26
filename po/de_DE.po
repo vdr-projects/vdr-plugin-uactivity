@@ -15,4 +15,4 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "running shellscipts based upton user aktivity changes"
-msgstr ""
+msgstr "Startet Shellscripte bei Änderungen der Nutzeraktivität"

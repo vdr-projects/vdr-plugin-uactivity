@@ -132,7 +132,7 @@ void cPluginUactivity::Stop(void)
 {
   // Stop any background activities the plugin is performing.
   Run.Call(oShutDown, k_Setup);
-  Run.Call(oShutDown, false);
+  Run.Call(oShutDown, !ShutdownHandler.IsUserInactive());
   Run.Call(oShutDown);
 }
 
