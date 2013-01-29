@@ -43,7 +43,7 @@ case "${PARAM_REASON}" in
 			|| commandline="${PARAM_ORGIN} ''"
 	;;
 	watchdog)
-		commandline="${PARAM_ORGIN} ''"
+		commandline="${PARAM_ORGIN} ${PARAM_VALUE}"
 	;;
 esac
 

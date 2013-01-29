@@ -55,7 +55,7 @@ protected:
     eOSState state = cOsdMenu::ProcessKey(Key);
     if (state == osUnknown)
       if ((Key >= kUp) && (Key < kNone)) {
-        Run.Call(oRunning, Key);
+        Run.CallKey(oRunning, Key);
         return osEnd;
       }
     return state;
@@ -116,14 +116,14 @@ bool cPluginUactivity::Start(void)
   Run.SetResourceDirectory(ConfigDirectory(PLUGIN_NAME_I18N));
 #endif
 
-  Run.Call(oStartUp, k_Setup);
+  Run.CallKey(oStartUp, k_Setup);
 
   bool ActivityStatus = !ShutdownHandler.IsUserInactive();
   LastActivity = ActivityStatus;
-  Run.Call(oStartUp, ActivityStatus);
+  Run.CallActivity(oStartUp, ActivityStatus);
 
   time(&LastTime);
-  if (WatchdogTimer > 0) Run.Call(oStartUp);
+  if (WatchdogTimer > 0) Run.CallWatchdog(oStartUp, ActivityStatus);
 
   return true;
 }
@@ -131,9 +131,10 @@ bool cPluginUactivity::Start(void)
 void cPluginUactivity::Stop(void)
 {
   // Stop any background activities the plugin is performing.
-  Run.Call(oShutDown, k_Setup);
-  Run.Call(oShutDown, !ShutdownHandler.IsUserInactive());
-  Run.Call(oShutDown);
+  bool ActivityStatus = !ShutdownHandler.IsUserInactive();
+  Run.CallKey(oShutDown, k_Setup);
+  Run.CallActivity(oShutDown, ActivityStatus);
+  Run.CallWatchdog(oShutDown, ActivityStatus);
 }
 
 void cPluginUactivity::MainThreadHook(void)
@@ -143,7 +144,7 @@ void cPluginUactivity::MainThreadHook(void)
   bool ActivityStatus = !ShutdownHandler.IsUserInactive();
   if (ActivityStatus != LastActivity) {
     LastActivity = ActivityStatus;
-    Run.Call(oRunning, ActivityStatus);
+    Run.CallActivity(oRunning, ActivityStatus);
   }
 
   if (WatchdogTimer > 0) {
@@ -151,7 +152,7 @@ void cPluginUactivity::MainThreadHook(void)
     time(&Seconds);
     if (difftime(Seconds, LastTime) >= WatchdogTimer) {
       time(&LastTime);
-      Run.Call(oRunning);
+      Run.CallWatchdog(oRunning, ActivityStatus);
     }
   }
 }

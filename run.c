@@ -21,6 +21,17 @@ const char *cRun::OrginToString(eOrgin Orgin)
   return OrginStr;
 }
 
+const char *cRun::ActivityStatusToString(bool Active)
+{
+  const char *ActivityStatusStr = "";
+  if (Active)
+    ActivityStatusStr = "true";
+  else
+    ActivityStatusStr = "false";
+
+  return ActivityStatusStr;
+}
+
 void cRun::SetConfigDirectory(const char *Directory)
 {
   myConfigDirectory = strdup(Directory);
@@ -36,21 +47,15 @@ void cRun::SetResourceDirectory(const char *Directory)
   myResourceDirectory = strdup(Directory);
 } 
 
-void cRun::Call(eOrgin Orgin, bool Active)
+void cRun::CallActivity(eOrgin Orgin, bool Active)
 {
-  const char *ActivityStatusStr = "";
-  if (Active)
-    ActivityStatusStr = "true";
-  else
-    ActivityStatusStr = "false";
-
   char *buffer;
-  asprintf(&buffer, UACTIVITY_COMMAND, "activity", OrginToString(Orgin), ActivityStatusStr, myConfigDirectory, myCacheDirectory, myResourceDirectory);
+  asprintf(&buffer, UACTIVITY_COMMAND, "activity", OrginToString(Orgin), ActivityStatusToString(Active), myConfigDirectory, myCacheDirectory, myResourceDirectory);
   SystemExec(buffer, true);
   free(buffer); 
 }
 
-void cRun::Call(eOrgin Orgin, eKeys Key)
+void cRun::CallKey(eOrgin Orgin, eKeys Key)
 {
   char *buffer;
   asprintf(&buffer, UACTIVITY_COMMAND, "key", OrginToString(Orgin), myKey.ToString(Key), myConfigDirectory, myCacheDirectory, myResourceDirectory);
@@ -58,10 +63,10 @@ void cRun::Call(eOrgin Orgin, eKeys Key)
   free(buffer); 
 }
 
-void cRun::Call(eOrgin Orgin)
+void cRun::CallWatchdog(eOrgin Orgin, bool Active)
 {
   char *buffer;
-  asprintf(&buffer, UACTIVITY_COMMAND, "watchdog", OrginToString(Orgin), "none", myConfigDirectory, myCacheDirectory, myResourceDirectory);
+  asprintf(&buffer, UACTIVITY_COMMAND, "watchdog", OrginToString(Orgin), ActivityStatusToString(Active), myConfigDirectory, myCacheDirectory, myResourceDirectory);
   SystemExec(buffer, true);
   free(buffer); 
 }

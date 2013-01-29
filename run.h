@@ -12,15 +12,16 @@ private:
   char *myResourceDirectory; 
   cKey myKey;
   static const char *OrginToString(eOrgin Orgin);
+  static const char *ActivityStatusToString(bool Active);
 public:
   cRun() { };
   ~cRun();
   void SetConfigDirectory(const char *Directory);
   void SetCacheDirectory(const char *Directory);
   void SetResourceDirectory(const char *Directory);
-  void Call(eOrgin Orgin, bool Active);
-  void Call(eOrgin Orgin, eKeys Key);
-  void Call(eOrgin Orgin);
+  void CallActivity(eOrgin Orgin, bool Active);
+  void CallKey(eOrgin Orgin, eKeys Key);
+  void CallWatchdog(eOrgin Orgin, bool Active);
 };
 
 extern cRun Run;

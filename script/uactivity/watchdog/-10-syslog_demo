@@ -3,18 +3,27 @@
 case "${1}" in
   startup)
     logger -t "uactivity [watchdog/$(basename ${0})]" "watchdog starting up"
+    [ "${2}" = "true" ] \
+      && logger -t "uactivity [watchdog/$(basename ${0})]" "status \"user active\"" \
+      || logger -t "uactivity [watchdog/$(basename ${0})]" "status \"user inactive\"" 
     logger -t "uactivity [watchdog/$(basename ${0})]" "ConfigDirectory:   ${3}"
     logger -t "uactivity [watchdog/$(basename ${0})]" "CacheDirectory:    ${4}"
     logger -t "uactivity [watchdog/$(basename ${0})]" "ResourceDirectory: ${5}"
   ;;
   shutdown)
     logger -t "uactivity [watchdog/$(basename ${0})]" "watchdog shutting down"
+    [ "${2}" = "true" ] \
+      && logger -t "uactivity [watchdog/$(basename ${0})]" "status \"user active\"" \
+      || logger -t "uactivity [watchdog/$(basename ${0})]" "status \"user inactive\"" 
     logger -t "uactivity [watchdog/$(basename ${0})]" "ConfigDirectory:   ${3}"
     logger -t "uactivity [watchdog/$(basename ${0})]" "CacheDirectory:    ${4}"
     logger -t "uactivity [watchdog/$(basename ${0})]" "ResourceDirectory: ${5}"
   ;;
   running)
     logger -t "uactivity [watchdog/$(basename ${0})]" "watchdog triggered"
+    [ "${2}" = "true" ] \
+      && logger -t "uactivity [watchdog/$(basename ${0})]" "status \"user active\"" \
+      || logger -t "uactivity [watchdog/$(basename ${0})]" "status \"user inactive\"" 
     logger -t "uactivity [watchdog/$(basename ${0})]" "ConfigDirectory:   ${3}"
     logger -t "uactivity [watchdog/$(basename ${0})]" "CacheDirectory:    ${4}"
     logger -t "uactivity [watchdog/$(basename ${0})]" "ResourceDirectory: ${5}"
