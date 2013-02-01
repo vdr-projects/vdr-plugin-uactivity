@@ -15,6 +15,7 @@ const char *cRun::OrginToString(eOrgin Orgin)
 {
   const char *OrginStr = "";
   if (Orgin == oStartUp) OrginStr = "startup";
+  else if (Orgin == oStarted) OrginStr = "started";
   else if (Orgin == oShutDown) OrginStr = "shutdown";
   else if (Orgin == oRunning) OrginStr = "running";
 

@@ -1,7 +1,24 @@
 #!/bin/sh
 
-([ "${2}" = "true" ] && [ "${1}" != "shutdown" ]) \
-  && irsend -d /var/run/lirc/ya_usbir SEND_ONCE TP av \
-  || irsend -d /var/run/lirc/ya_usbir SEND_ONCE TP off
+switch_tv(){
+  [ "${1}" = "on" ] && irsend -d /var/run/lirc/ya_usbir SEND_ONCE TV_REMOTE on
+  [ "${1}" = "off" ] && irsend -d /var/run/lirc/ya_usbir SEND_ONCE TV_REMOTE off
+}
+
+
+case "${1}" in
+  startup)
+    true
+  ;;
+  started)
+    [ "${2}" = "true" ] && switch_tv on
+  ;;
+  shutdown)
+    switch_tv off
+  ;;
+  running)
+    [ "${2}" = "true" ] && switch_tv on || switch_tv off
+  ;;
+esac
 
 exit 0

@@ -23,6 +23,7 @@ static const char *DESCRIPTION    = trNOOP("running shellscipts based upton user
 class cPluginUactivity : public cPlugin {
 private:
   // Add any member variables or functions you may need here.
+  bool FirstMainThreadHook;
   bool LastActivity;
   int WatchdogTimer;
   time_t LastTime;
@@ -70,6 +71,7 @@ cPluginUactivity::cPluginUactivity(void)
   // DON'T DO ANYTHING ELSE THAT MAY HAVE SIDE EFFECTS, REQUIRE GLOBAL
   // VDR OBJECTS TO EXIST OR PRODUCE ANY OUTPUT!
   WatchdogTimer = WATCHDOG;
+  FirstMainThreadHook = true;
 }
 
 const char *cPluginUactivity::CommandLineHelp(void)
@@ -142,6 +144,14 @@ void cPluginUactivity::MainThreadHook(void)
   // Perform actions in the context of the main program thread.
   // WARNING: Use with great care - see PLUGINS.html!
   bool ActivityStatus = !ShutdownHandler.IsUserInactive();
+
+  if (FirstMainThreadHook) {
+    Run.CallKey(oStarted, k_Setup);
+    Run.CallActivity(oStarted, ActivityStatus);
+    Run.CallWatchdog(oStarted, ActivityStatus);
+    FirstMainThreadHook = false;
+  }
+
   if (ActivityStatus != LastActivity) {
     LastActivity = ActivityStatus;
     Run.CallActivity(oRunning, ActivityStatus);

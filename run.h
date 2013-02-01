@@ -3,7 +3,7 @@
 
 #include <vdr/keys.h>
 
-enum eOrgin {oStartUp, oShutDown, oRunning};
+enum eOrgin {oStartUp, oStarted, oShutDown, oRunning};
 
 class cRun {
 private:
