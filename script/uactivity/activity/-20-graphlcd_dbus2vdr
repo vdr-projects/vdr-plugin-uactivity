@@ -1,0 +1,54 @@
+#!/bin/sh
+
+# Do not use the graphlcd plugin commandline or udev to connect the display.
+# The display will be controlled only by this Script based upton user activity
+
+# Enter here the display specific values
+#
+DISPLAY="serdisp"
+SKIN="sdc_240x128"
+SWITCH_OFF_CMD="sdcmegtron_tool -b 0"
+SWITCH_ON_CMD=""
+#
+# END OF CONFIG SECTION
+
+
+
+switch_lcd(){
+  if [ "${1}" = "on" ]; then
+    # switch display on
+    [ -n "${SWITCH_ON_CMD}" ] && ${SWITCH_ON_CMD}
+    # connect the display to graphlcd
+    /usr/bin/dbus-send --system --type=method_call --dest=de.tvdr.vdr /Plugins/graphlcd de.tvdr.vdr.plugin.SVDRPCommand string:"connect" string:"${DISPLAY} ${SKIN}"
+  else
+    # disconnect the display from graphlcd
+      # " > /dev/null" because "--print-reply"
+      # --print-reply return not before graphlcd ist done with disconn
+    /usr/bin/dbus-send --system --type=method_call --print-reply --dest=de.tvdr.vdr /Plugins/graphlcd de.tvdr.vdr.plugin.SVDRPCommand string:"disconn" string:"${DISPLAY}" > /dev/null
+    # switch display off
+    [ -n "${SWITCH_OFF_CMD}" ] && ${SWITCH_OFF_CMD}
+  fi
+}
+
+
+
+case "${1}" in
+  startup)
+    true
+  ;;
+  started)
+    [ "${2}" = "true" ] && switch_lcd on
+  ;;
+  shutdown)
+    switch_lcd off
+  ;;
+  running)
+    if [ "${2}" = "true" ]; then
+      switch_lcd on
+    else
+      switch_lcd off
+    fi
+  ;;
+esac
+
+exit 0

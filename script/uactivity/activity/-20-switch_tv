@@ -1,9 +1,19 @@
 #!/bin/sh
 
 switch_tv(){
-  [ "${1}" = "on" ] && irsend -d /var/run/lirc/ya_usbir SEND_ONCE TV_REMOTE on
-  [ "${1}" = "off" ] && irsend -d /var/run/lirc/ya_usbir SEND_ONCE TV_REMOTE off
+  if [ "${1}" = "on" ]; then
+    # yaUSBir sometimes ignore the first command, send an existing dummy ir code
+    irsend -d /var/run/lirc/ya_usbir SEND_ONCE TV_DUMMY dummy
+    sleep 0.5
+    irsend -d /var/run/lirc/ya_usbir SEND_ONCE TV_REMOTE on
+  else
+    # yaUSBir sometimes ignore the first command, send an existing dummy ir code
+    irsend -d /var/run/lirc/ya_usbir SEND_ONCE TV_DUMMY dummy
+    sleep 0.5
+    irsend -d /var/run/lirc/ya_usbir SEND_ONCE TV_REMOTE off
+  fi
 }
+
 
 
 case "${1}" in
@@ -17,7 +27,11 @@ case "${1}" in
     switch_tv off
   ;;
   running)
-    [ "${2}" = "true" ] && switch_tv on || switch_tv off
+    if [ "${2}" = "true" ]; then
+      switch_tv on
+    else
+      switch_tv off
+    fi
   ;;
 esac
 

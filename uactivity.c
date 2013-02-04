@@ -27,6 +27,8 @@ private:
   bool LastActivity;
   int WatchdogTimer;
   time_t LastTime;
+  cMutex AliveMutex;
+  time_t Alive;
 public:
   cPluginUactivity(void);
   virtual ~cPluginUactivity() { };
@@ -46,8 +48,8 @@ public:
   virtual cMenuSetupPage *SetupMenu(void) { return NULL; };
   virtual bool SetupParse(const char *Name, const char *Value) { return false; };
   virtual bool Service(const char *Id, void *Data = NULL) { return false; };
-  virtual const char **SVDRPHelpPages(void) { return NULL; };
-  virtual cString SVDRPCommand(const char *Command, const char *Option, int &ReplyCode) { return NULL; };
+  virtual const char **SVDRPHelpPages(void);
+  virtual cString SVDRPCommand(const char *Command, const char *Option, int &ReplyCode);
 };
 
 class cPluginUactivityMenu : public cOsdMenu {
@@ -118,6 +120,8 @@ bool cPluginUactivity::Start(void)
   Run.SetResourceDirectory(ConfigDirectory(PLUGIN_NAME_I18N));
 #endif
 
+  time(&Alive);
+
   Run.CallKey(oStartUp, k_Setup);
 
   bool ActivityStatus = !ShutdownHandler.IsUserInactive();
@@ -143,6 +147,10 @@ void cPluginUactivity::MainThreadHook(void)
 {
   // Perform actions in the context of the main program thread.
   // WARNING: Use with great care - see PLUGINS.html!
+  AliveMutex.Lock();
+  time(&Alive);
+  AliveMutex.Unlock();
+
   bool ActivityStatus = !ShutdownHandler.IsUserInactive();
 
   if (FirstMainThreadHook) {
@@ -171,6 +179,42 @@ cOsdObject *cPluginUactivity::MainMenuAction(void)
 {
   // Perform the action when selected from the main VDR menu.
   return new cPluginUactivityMenu();
+}
+
+const char **cPluginUactivity::SVDRPHelpPages(void)
+{
+  static const char *HelpPages[] = {
+    "ACTIVE\n"
+    "	'ACTIVE'  Return the user activity status",
+    "ALIVE\n"
+    "	'ALIVE'  Last time where the VDR was seen alive",
+    NULL
+  };
+  return HelpPages;
+}
+
+cString cPluginUactivity::SVDRPCommand(const char *Command, const char *Option, int &ReplyCode)
+{
+  if(!strcasecmp(Command, "ACTIVE")) {
+    if(!ShutdownHandler.IsUserInactive()) {
+      ReplyCode = 900;
+      return "User aktive";
+    } else {
+      ReplyCode = 901;
+      return "User inactive";
+    }
+  }
+  else if(!strcasecmp(Command, "ALIVE")) {
+    ReplyCode = 902;
+    AliveMutex.Lock();
+    const time_t tAlive = Alive;
+    AliveMutex.Unlock();
+    return cString::sprintf("%ld", tAlive);
+  }
+  else {
+    ReplyCode = 502; return "Command not implemented";
+  }
+  return NULL;
 }
 
 VDRPLUGINCREATOR(cPluginUactivity); // Don't touch this!

@@ -1,0 +1,6 @@
+.dependencies
+*.so
+*.o
+Makefile
+po/*.mo
+po/uactivity.pot
