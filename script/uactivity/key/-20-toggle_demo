@@ -1,12 +1,14 @@
 #!/bin/sh
 
+# do not use names starting with [0-9][0-9] for data files
 FLAG="${4}/key/flag.$(basename ${0})"
 
 case "${1}" in
   startup)
     # create flag directory (using cache directory)
     mkdir -p "${4}/key/"
-    # delete flag
+    # delete flag (may leftover from previus vdr crash)
+    # kepp the flag if toggle state should be keep over vdr sessions
     rm -f "${FLAG}"
   ;;
   running)
@@ -19,7 +21,6 @@ case "${1}" in
       else
         # here we do our "on" action
         logger -t "uactivity [key/$(basename ${0})]" "$(basename ${0}) on"
-        # do not use names starting with [0-9][0-9] for data files
         touch "${FLAG}"
       fi
     fi

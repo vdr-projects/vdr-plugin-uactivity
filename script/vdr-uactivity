@@ -38,9 +38,11 @@ case "${PARAM_REASON}" in
 		commandline="${PARAM_ORGIN} ${PARAM_VALUE}"
 	;;
 	key)
-		[ "${PARAM_VALUE}" != "_Setup" ] \
-			&& commandline="${PARAM_ORGIN} ${PARAM_VALUE}" \
-			|| commandline="${PARAM_ORGIN} ''"
+		if [ "${PARAM_VALUE}" != "_Setup" ]; then
+			commandline="${PARAM_ORGIN} ${PARAM_VALUE}"
+		else
+			commandline="${PARAM_ORGIN} ''"
+		fi
 	;;
 	watchdog)
 		commandline="${PARAM_ORGIN} ${PARAM_VALUE}"
