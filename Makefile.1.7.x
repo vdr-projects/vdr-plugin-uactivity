@@ -22,6 +22,7 @@ LOCDIR = $(call PKGCFG,locdir)
 PLGCFG = $(call PKGCFG,plgcfg)
 BINDIR = $(call PKGCFG,bindir)
 CFGDIR = $(call PKGCFG,configdir)
+CACHEDIR = $(call PKGCFG,cachedir)
 
 #
 TMPDIR ?= /tmp
@@ -123,10 +124,16 @@ ifndef PLUGIN_UACTIVITY_NOINSTALL_BIN
 	install -D script/vdr-uactivity $(DESTDIR)$(BINDIR)/vdr-uactivity
 	install -d $(DESTDIR)$(CFGDIR)/plugins/$(PLUGIN)/activity
 	install script/uactivity/activity/* $(DESTDIR)$(CFGDIR)/plugins/$(PLUGIN)/activity
+	chmod -x $(DESTDIR)$(CFGDIR)/plugins/$(PLUGIN)/activity/README
 	install -d $(DESTDIR)$(CFGDIR)/plugins/$(PLUGIN)/key
 	install script/uactivity/key/* $(DESTDIR)$(CFGDIR)/plugins/$(PLUGIN)/key
+	chmod -x $(DESTDIR)$(CFGDIR)/plugins/$(PLUGIN)/key/README
 	install -d $(DESTDIR)$(CFGDIR)/plugins/$(PLUGIN)/watchdog
 	install script/uactivity/watchdog/* $(DESTDIR)$(CFGDIR)/plugins/$(PLUGIN)/watchdog
+	chmod -x $(DESTDIR)$(CFGDIR)/plugins/$(PLUGIN)/watchdog/README
+	[ -d "$(DESTDIR)$(CACHEDIR)/plugins/$(PLUGIN)/activity" ] && chmod ugo+w $(DESTDIR)$(CACHEDIR)/plugins/$(PLUGIN)/activity || true
+	[ -d "$(DESTDIR)$(CACHEDIR)/plugins/$(PLUGIN)/key" ] && chmod ugo+w $(DESTDIR)$(CACHEDIR)/plugins/$(PLUGIN)/key || true
+	[ -d "$(DESTDIR)$(CACHEDIR)/plugins/$(PLUGIN)/watchdog" ] && chmod ugo+w $(DESTDIR)$(CACHEDIR)/plugins/$(PLUGIN)/watchdog || true
 endif
 
 install: install-lib install-i18n install-bin

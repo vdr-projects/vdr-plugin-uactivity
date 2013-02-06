@@ -4,9 +4,7 @@
 # Copy this file to 'Make.config' and change the parameters as necessary.
 #
 
-# The shell comman used
-# If you are using upstart you may use
-# PLUGIN_UACTIVITY_COMMAND=initctl emit --system --no-wait vdr-uactivity reason=%1$$s orgin=%2$$s value=%3$$s ConfigDirectory=%4$$s CacheDirectory=%5$$s ResourceDirectory=%6$$s
+# The shell command used
 
 PLUGIN_UACTIVITY_COMMAND?=vdr-uactivity -r %1$$s -o %2$$s -v %3$$s -C %4$$s -c %5$$s -R %6$$s
 

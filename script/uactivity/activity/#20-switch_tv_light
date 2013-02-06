@@ -5,19 +5,21 @@ set -e
 
 # Your Settings
 #
+SWITCH_ON_CMD="touch /tmp/tv_light"
+SWITCH_OFF_CMD="rm -f /tmp/tv_light"
+USE_DAYLIGHT="yes"
 LATITUDE="52.000000"
 LONGITUDE="11.000000"
 # http://search.cpan.org/~rkhill/DateTime-Event-Sunrise-0.0501/lib/DateTime/Event/Sunrise.pm#METHODS
 ALTITUDE="-0.833"
-SWITCH_ON_CMD="touch /tmp/tv_light"
-SWITCH_OFF_CMD="rm -f /tmp/tv_light"
 #
 # End of user config
 # apt-get install libdatetime-event-sunrise-perl
 
 
 
-JOB_ID_FILE="${4}/activity/jobid.$(basename ${0})" 
+JOB_ID_DIR="${4}/activity/$(basename ${0}).data"
+JOB_ID_FILE="${JOB_ID_DIR}/jobid"
 
 
 
@@ -26,7 +28,7 @@ daylight(){
   export LONGITUDE
   export ALTITUDE
 
-sunset="$(perl <<'EOF' 2> /dev/null
+sunsetsunrise="$(perl <<'EOF' 2> /dev/null
   use DateTime;
   use DateTime::Event::Sunrise;
   use DateTime::Format::Strptime;
@@ -39,22 +41,28 @@ sunset="$(perl <<'EOF' 2> /dev/null
   my $sunset = DateTime::Event::Sunrise ->sunset (longitude => $longitude, latitude => $latitude, altitude => $altitude, iteration => '1');
 
   my $strp = DateTime::Format::Strptime->new(pattern => '%H:%M %Y-%m-%d');
-  print $strp->format_datetime($sunset->next(DateTime->now(time_zone=>'local')));
-
   my $day_set = DateTime::SpanSet->from_sets(start_set => $sunrise, end_set => $sunset);
-  $day_set->contains(DateTime->now()) ? exit 1 : exit 0;
+  if ($day_set->contains(DateTime->now())) {
+    print $strp->format_datetime($sunset->next(DateTime->now(time_zone=>'local')));
+    exit 1;
+  } else {
+    print $strp->format_datetime($sunrise->next(DateTime->now(time_zone=>'local')));
+    exit 0;
+  }
 EOF
 )"
 
   err=$?
+
+  [ -z "${sunsetsunrise}" ] && return 2
+
   if [ ${err} = 0 ]; then
-    echo ""
+    echo "${sunsetsunrise}"
     return 0
   elif [ ${err} = 1 ]; then
-    echo "${sunset}"
+    echo "${sunsetsunrise}"
     return 1
   else
-    echo ""
     return 2
   fi
 }
@@ -71,23 +79,36 @@ delete_job(){
 
 
 
+create_job(){
+  JOB_ID_TMP="$(echo "rm -f "${JOB_ID_FILE}"; ${1}" | at ${2} 2>&1)"
+  JOB_ID="$(echo "${JOB_ID_TMP}" | tr -d '\n' | sed 's/^.*job \([0-9]*\).*$/\1/')"
+  mkdir -p "${JOB_ID_DIR}"
+  echo "${JOB_ID}" > ${JOB_ID_FILE}
+}
+
+
+
 switch_tv_light(){
-  delete_job
   if [ "${1}" = "on" ]; then
-    sunset="$(daylight)"
-    light=$?
-    if [ "${light}" = "1" ]; then
-      # daylight now, shedule "light on" for later
-      JOB_ID_TMP="$(echo "rm -f "${JOB_ID_FILE}"; ${SWITCH_ON_CMD}" | at ${sunset} 2>&1)"
-      JOB_ID="$(echo "${JOB_ID_TMP}" | tr -d '\n' | sed 's/^.*job \([0-9]*\).*$/\1/')"
-      echo "${JOB_ID}" > ${JOB_ID_FILE}
-    elif [ "${light}" = "0" ]; then
-      eval ${SWITCH_ON_CMD}
+    if [ "${USE_DAYLIGHT}" = "yes" ]; then
+      delete_job
+      sunsetsunrise="$(daylight)" && light=0 || light=$?
+      if [ "${light}" = "1" ]; then
+        # daylight now, shedule "light on" for later
+        create_job "${SWITCH_ON_CMD}" "${sunsetsunrise}"
+      elif [ "${light}" = "0" ]; then
+        eval ${SWITCH_ON_CMD}
+        # no daylight now, shedule "light off" for later
+        create_job "${SWITCH_OFF_CMD}" "${sunsetsunrise}"
+      else
+        # Some error
+        eval ${SWITCH_OFF_CMD}
+      fi
     else
-      # Some error
-      eval ${SWITCH_OFF_CMD}
+      eval ${SWITCH_ON_CMD}
     fi
   else
+    [ "${USE_DAYLIGHT}" = "yes" ] && delete_job
     eval ${SWITCH_OFF_CMD}
   fi
 }
