@@ -1,0 +1,75 @@
+#!/bin/sh
+
+set -u
+set -e
+
+# Your settings
+#
+WATCHDOG_TIME="99.9" # 0.1 - 99.9 Seconds
+IRSEND="irsend -d /var/run/lirc/ya_usbir SEND_ONCE yaUsbIR_control C_WATCHDOG %s C_END"
+#
+# End of user config
+
+
+trigger_watchdog(){
+  # Calculate n1, n2 and n3 values
+  eval $(bc <<EOF 2> /dev/null
+
+watchdog = ${WATCHDOG_TIME}
+
+if ((watchdog < 0.1) || (watchdog > 99.9) || (scale(watchdog) > 1)) {
+  print "N1=0\n"
+  print "N2=0\n"
+  print "N3=0\n"
+  print "OK=false\n"
+  halt
+}
+
+watchdog = watchdog * 1000
+
+scale = 0
+n1 = watchdog / 10000
+part = watchdog % 10000
+n2 = part / 1000
+part = part % 1000
+n3 = part / 100
+
+print "N1=",n1,"\n"
+print "N2=",n2,"\n"
+print "N3=",n3,"\n"
+print "OK=true\n"
+
+EOF
+)
+
+  if [ "${OK}" = "true" ]; then
+    eval $(printf "${IRSEND} 2> /dev/null" "1 ${N1} ${N2} ${N3}") || return 1
+  else
+    return 1
+  fi
+}
+
+
+
+deactivate_watchdog(){
+  eval $(printf "${IRSEND} 2> /dev/null" "0") || return 1
+}
+
+
+
+case "${1}" in
+  startup)
+    trigger_watchdog || exit 1
+  ;;
+  started)
+    trigger_watchdog || exit 1
+  ;;
+  shutdown)
+    deactivate_watchdog || exit 1
+  ;;
+  running)
+    trigger_watchdog || exit 1
+  ;;
+esac
+
+exit 0
