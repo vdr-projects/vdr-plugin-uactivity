@@ -11,7 +11,10 @@ PLUGIN = uactivity
 
 ### The version number of this plugin (taken from the main source file):
 
-VERSION = $(shell grep 'static const char \*VERSION *=' $(PLUGIN).c | awk '{ print $$6 }' | sed -e 's/[";]//g')
+VERSION = $(shell [ -d .git ] && git describe --tags --dirty| sed 's/^v//' || cat version)
+ifeq ($(strip $(VERSION)),)
+    $(error VERSION is undefined)
+endif
 
 ### The directory environment:
 
@@ -61,7 +64,7 @@ SOFILE = libvdr-$(PLUGIN).so
 
 INCLUDES +=
 
-DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DUACTIVITY_COMMAND='"$(PLUGIN_UACTIVITY_COMMAND)"'
+DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DUACTIVITY_COMMAND='"$(PLUGIN_UACTIVITY_COMMAND)"' -DPLUGIN_VERSION='"$(VERSION)"'
 
 ### The object files (add further files here):
 

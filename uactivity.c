@@ -17,7 +17,7 @@
 #define STRINGIFY(x) STRINGIFYX(x)
 #define WATCHDOG 0
 
-static const char *VERSION        = "0.0.1pre";
+static const char *VERSION        = PLUGIN_VERSION;
 static const char *DESCRIPTION    = trNOOP("running shellscipts based upton user aktivity changes");
 
 class cPluginUactivity : public cPlugin {
