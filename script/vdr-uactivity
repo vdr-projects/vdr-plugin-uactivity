@@ -31,21 +31,39 @@ done
 
 [ -n "$cmd_error" ] && usage
 
+# could ovveride the directories for FHS
+[ -r "${PARAM_CONFIGDIRECTORY}/directories.conf" ] && . "${PARAM_CONFIGDIRECTORY}/directories.conf"
+
 [ -d "${PARAM_CONFIGDIRECTORY}/${PARAM_REASON}" ] || exit 0
+
+UACTIVITY_CONFIGDIRECTORY="${PARAM_CONFIGDIRECTORY}"
+UACTIVITY_CACHEDIRECTORY="${PARAM_CACHEDIRECTORY}"
+UACTIVITY_RESOURCEDIRECTORY="${PARAM_RESOURCEDIRECTORY}"
+export UACTIVITY_CONFIGDIRECTORY UACTIVITY_CACHEDIRECTORY UACTIVITY_RESOURCEDIRECTORY
+
+UACTIVITY_ORGIN="${PARAM_ORGIN}"
+export UACTIVITY_ORGIN
 
 case "${PARAM_REASON}" in
 	activity)
 		commandline="${PARAM_ORGIN} ${PARAM_VALUE}"
+		UACTIVITY_ACTIVITY="${PARAM_VALUE}"
+		export UACTIVITY_ACTIVITY
 	;;
 	key)
 		if [ "${PARAM_VALUE}" != "_Setup" ]; then
 			commandline="${PARAM_ORGIN} ${PARAM_VALUE}"
+			UACTIVITY_KEY="${PARAM_VALUE}"
 		else
 			commandline="${PARAM_ORGIN} ''"
+			UACTIVITY_KEY=""
 		fi
+		export UACTIVITY_KEY
 	;;
 	watchdog)
 		commandline="${PARAM_ORGIN} ${PARAM_VALUE}"
+		UACTIVITY_ACTIVITY="${PARAM_VALUE}"
+		export UACTIVITY_ACTIVITY
 	;;
 esac
 
@@ -54,7 +72,7 @@ for hook in ${hooks}; do
     if [ -x $hook ]; then
         eval $hook $commandline "$PARAM_CONFIGDIRECTORY" "$PARAM_CACHEDIRECTORY" "$PARAM_RESOURCEDIRECTORY"
     else
-        eval /bin/sh $hook  $commandline "$PARAM_CONFIGDIRECTORY" "$PARAM_CACHEDIRECTORY" "$PARAM_RESOURCEDIRECTORY"
+        eval /bin/sh $hook $commandline "$PARAM_CONFIGDIRECTORY" "$PARAM_CACHEDIRECTORY" "$PARAM_RESOURCEDIRECTORY"
     fi
     [ $? -ne 0 ] && ${LOG} "error when executing ${hook}"
 done
