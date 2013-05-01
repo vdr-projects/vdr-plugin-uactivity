@@ -114,7 +114,11 @@ bool cPluginUactivity::Start(void)
   uactivityRun.SetConfigDirectory(ConfigDirectory(PLUGIN_NAME_I18N));
 #if VDRVERSNUM >= 10729
   uactivityRun.SetCacheDirectory(CacheDirectory(PLUGIN_NAME_I18N));
-  uactivityRun.SetResourceDirectory(ResourceDirectory(PLUGIN_NAME_I18N));
+  // ResourceDirectory() Return NULL in case the Directory could not be createt
+  if (ResourceDirectory(PLUGIN_NAME_I18N) != NULL)
+    uactivityRun.SetResourceDirectory(ResourceDirectory(PLUGIN_NAME_I18N));
+  else
+    uactivityRun.SetResourceDirectory("''");
 #else
   uactivityRun.SetCacheDirectory(ConfigDirectory(PLUGIN_NAME_I18N));
   uactivityRun.SetResourceDirectory(ConfigDirectory(PLUGIN_NAME_I18N));
