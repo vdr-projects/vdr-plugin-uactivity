@@ -9,70 +9,57 @@ mylog() {
 }
 
 usage(){
-	${LOG} "Usage: $(basename $0) -r <reason activity|key|watchdog> -o <orgin startup|shutdown|running> -v <value>"
+	${LOG} "Usage: $(basename $0) -r <reason activity|key|watchdog> -o <orgin startup|started|shutdown|running>"
 	${LOG} "                     -C <ConfigDirectory> -c <CacheDirectory> -R <ResourceDirectory>"
+	${LOG} "                     -A <activity> -K <Key> -V <Video Directory>"
 	${LOG} "$cmd_error"
 	exit 1
 }
 
 cmd_error=""
-while getopts ":r:o:v:C:c:R:" opt; do
+while getopts "r:o:C:c:R:A:K:V:" opt; do
 	case "$opt" in
 		r) PARAM_REASON="$OPTARG";;
 		o) PARAM_ORGIN="$OPTARG";;
-		v) PARAM_VALUE="$OPTARG";;
 		C) PARAM_CONFIGDIRECTORY="$OPTARG";;
 		c) PARAM_CACHEDIRECTORY="$OPTARG";;
 		R) PARAM_RESOURCEDIRECTORY="$OPTARG";;
+		A) PARAM_ACTIVITY="$OPTARG";;
+		K) PARAM_KEY="$OPTARG";;
+		V) PARAM_VIDEODIR="$OPTARG";;
 		--) break;;
-		\?) cmd_error="$(gettext 'Error: Error parsing Commandline')"; break;;
+		\?) cmd_error="Error: Error parsing Commandline"; break;;
 	esac
 done
 
 [ -n "$cmd_error" ] && usage
 
-# could ovveride the directories for FHS
+# we could ovveride the directories for FHS
 [ -r "${PARAM_CONFIGDIRECTORY}/directories.conf" ] && . "${PARAM_CONFIGDIRECTORY}/directories.conf"
 
+# Exit if nothing to do
 [ -d "${PARAM_CONFIGDIRECTORY}/${PARAM_REASON}" ] || exit 0
+
+# Export the Values for the activity scripts
+UACTIVITY_ORGIN="${PARAM_ORGIN}"
+export UACTIVITY_ORGIN
 
 UACTIVITY_CONFIGDIRECTORY="${PARAM_CONFIGDIRECTORY}"
 UACTIVITY_CACHEDIRECTORY="${PARAM_CACHEDIRECTORY}"
 UACTIVITY_RESOURCEDIRECTORY="${PARAM_RESOURCEDIRECTORY}"
 export UACTIVITY_CONFIGDIRECTORY UACTIVITY_CACHEDIRECTORY UACTIVITY_RESOURCEDIRECTORY
 
-UACTIVITY_ORGIN="${PARAM_ORGIN}"
-export UACTIVITY_ORGIN
-
-case "${PARAM_REASON}" in
-	activity)
-		commandline="${PARAM_ORGIN} ${PARAM_VALUE}"
-		UACTIVITY_ACTIVITY="${PARAM_VALUE}"
-		export UACTIVITY_ACTIVITY
-	;;
-	key)
-		if [ "${PARAM_VALUE}" != "_Setup" ]; then
-			commandline="${PARAM_ORGIN} ${PARAM_VALUE}"
-			UACTIVITY_KEY="${PARAM_VALUE}"
-		else
-			commandline="${PARAM_ORGIN} ''"
-			UACTIVITY_KEY=""
-		fi
-		export UACTIVITY_KEY
-	;;
-	watchdog)
-		commandline="${PARAM_ORGIN} ${PARAM_VALUE}"
-		UACTIVITY_ACTIVITY="${PARAM_VALUE}"
-		export UACTIVITY_ACTIVITY
-	;;
-esac
+UACTIVITY_INFO_ACTIVITY="${PARAM_ACTIVITY}"
+UACTIVITY_INFO_KEY="${PARAM_KEY}"
+UACTIVITY_INFO_VIDEODIR="${PARAM_VIDEODIR}"
+export UACTIVITY_INFO_ACTIVITY UACTIVITY_INFO_KEY UACTIVITY_INFO_VIDEODIR
 
 hooks="$(find "${PARAM_CONFIGDIRECTORY}/${PARAM_REASON}" -maxdepth 1 -xtype f -name '[0-9][0-9]*' | sort)" 
 for hook in ${hooks}; do
-    if [ -x $hook ]; then
-        eval $hook $commandline "$PARAM_CONFIGDIRECTORY" "$PARAM_CACHEDIRECTORY" "$PARAM_RESOURCEDIRECTORY"
+    if [ -x "${hook}" ]; then
+        eval "${hook}"
     else
-        eval /bin/sh $hook $commandline "$PARAM_CONFIGDIRECTORY" "$PARAM_CACHEDIRECTORY" "$PARAM_RESOURCEDIRECTORY"
+        eval /bin/sh "${hook}"
     fi
     [ $? -ne 0 ] && ${LOG} "error when executing ${hook}"
 done

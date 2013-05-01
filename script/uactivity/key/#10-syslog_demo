@@ -1,29 +1,37 @@
 #!/bin/sh
 
-case "${1}" in
+case "${UACTIVITY_ORGIN}" in
   startup)
     logger -t "uactivity [key/$(basename ${0})]" "key starting up"
-    logger -t "uactivity [key/$(basename ${0})]" "ConfigDirectory:   ${3}"
-    logger -t "uactivity [key/$(basename ${0})]" "CacheDirectory:    ${4}"
-    logger -t "uactivity [key/$(basename ${0})]" "ResourceDirectory: ${5}"
+    logger -t "uactivity [key/$(basename ${0})]" "ConfigDirectory:   ${UACTIVITY_CONFIGDIRECTORY}"
+    logger -t "uactivity [key/$(basename ${0})]" "CacheDirectory:    ${UACTIVITY_CACHEDIRECTORY}"
+    logger -t "uactivity [key/$(basename ${0})]" "ResourceDirectory: ${UACTIVITY_RESOURCEDIRECTORY}"
+    logger -t "uactivity [key/$(basename ${0})]" "Key:               ${UACTIVITY_INFO_KEY}"
+    logger -t "uactivity [key/$(basename ${0})]" "VideoDirectory:    ${UACTIVITY_INFO_VIDEODIR}"
   ;;
   started)
     logger -t "uactivity [key/$(basename ${0})]" "key started"
-    logger -t "uactivity [key/$(basename ${0})]" "ConfigDirectory:   ${3}"
-    logger -t "uactivity [key/$(basename ${0})]" "CacheDirectory:    ${4}"
-    logger -t "uactivity [key/$(basename ${0})]" "ResourceDirectory: ${5}"
+    logger -t "uactivity [key/$(basename ${0})]" "ConfigDirectory:   ${UACTIVITY_CONFIGDIRECTORY}"
+    logger -t "uactivity [key/$(basename ${0})]" "CacheDirectory:    ${UACTIVITY_CACHEDIRECTORY}"
+    logger -t "uactivity [key/$(basename ${0})]" "ResourceDirectory: ${UACTIVITY_RESOURCEDIRECTORY}"
+    logger -t "uactivity [key/$(basename ${0})]" "Key:               ${UACTIVITY_INFO_KEY}"
+    logger -t "uactivity [key/$(basename ${0})]" "VideoDirectory:    ${UACTIVITY_INFO_VIDEODIR}"
   ;;
   shutdown)
     logger -t "uactivity [key/$(basename ${0})]" "key shutting down"
-    logger -t "uactivity [key/$(basename ${0})]" "ConfigDirectory:   ${3}"
-    logger -t "uactivity [key/$(basename ${0})]" "CacheDirectory:    ${4}"
-    logger -t "uactivity [key/$(basename ${0})]" "ResourceDirectory: ${5}"
+    logger -t "uactivity [key/$(basename ${0})]" "ConfigDirectory:   ${UACTIVITY_CONFIGDIRECTORY}"
+    logger -t "uactivity [key/$(basename ${0})]" "CacheDirectory:    ${UACTIVITY_CACHEDIRECTORY}"
+    logger -t "uactivity [key/$(basename ${0})]" "ResourceDirectory: ${UACTIVITY_RESOURCEDIRECTORY}"
+    logger -t "uactivity [key/$(basename ${0})]" "Key:               ${UACTIVITY_INFO_KEY}"
+    logger -t "uactivity [key/$(basename ${0})]" "VideoDirectory:    ${UACTIVITY_INFO_VIDEODIR}"
   ;;
   running)
     logger -t "uactivity [key/$(basename ${0})]" "key \"${2}\" pressed"
-    logger -t "uactivity [key/$(basename ${0})]" "ConfigDirectory:   ${3}"
-    logger -t "uactivity [key/$(basename ${0})]" "CacheDirectory:    ${4}"
-    logger -t "uactivity [key/$(basename ${0})]" "ResourceDirectory: ${5}"
+    logger -t "uactivity [key/$(basename ${0})]" "ConfigDirectory:   ${UACTIVITY_CONFIGDIRECTORY}"
+    logger -t "uactivity [key/$(basename ${0})]" "CacheDirectory:    ${UACTIVITY_CACHEDIRECTORY}"
+    logger -t "uactivity [key/$(basename ${0})]" "ResourceDirectory: ${UACTIVITY_RESOURCEDIRECTORY}"
+    logger -t "uactivity [key/$(basename ${0})]" "Key:               ${UACTIVITY_INFO_KEY}"
+    logger -t "uactivity [key/$(basename ${0})]" "VideoDirectory:    ${UACTIVITY_INFO_VIDEODIR}"
   ;;
 esac
 

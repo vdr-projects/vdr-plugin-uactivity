@@ -13,6 +13,7 @@ private:
   cKey myKey;
   static const char *OrginToString(eOrgin Orgin);
   static const char *ActivityStatusToString(bool Active);
+  const char *KeyToString(eKeys Key);
 public:
   cRun() { };
   ~cRun();
@@ -20,7 +21,7 @@ public:
   void SetCacheDirectory(const char *Directory);
   void SetResourceDirectory(const char *Directory);
   void CallActivity(eOrgin Orgin, bool Active);
-  void CallKey(eOrgin Orgin, eKeys Key);
+  void CallKey(eOrgin Orgin, bool Active, eKeys Key);
   void CallWatchdog(eOrgin Orgin, bool Active);
 };
 

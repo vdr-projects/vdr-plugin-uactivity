@@ -1,8 +1,9 @@
 
 #include "run.h"
 #include <vdr/thread.h>
+#include <vdr/videodir.h>
 
-cRun Run;
+cRun uactivityRun;
 
 cRun::~cRun()
 {
@@ -33,6 +34,14 @@ const char *cRun::ActivityStatusToString(bool Active)
   return ActivityStatusStr;
 }
 
+const char *cRun::KeyToString(eKeys Key)
+{
+  if (Key == kNone)
+    return "";
+  else
+    return myKey.ToString(Key);
+}
+
 void cRun::SetConfigDirectory(const char *Directory)
 {
   myConfigDirectory = strdup(Directory);
@@ -51,15 +60,15 @@ void cRun::SetResourceDirectory(const char *Directory)
 void cRun::CallActivity(eOrgin Orgin, bool Active)
 {
   char *buffer;
-  asprintf(&buffer, UACTIVITY_COMMAND, "activity", OrginToString(Orgin), ActivityStatusToString(Active), myConfigDirectory, myCacheDirectory, myResourceDirectory);
+  asprintf(&buffer, UACTIVITY_COMMAND, "activity", OrginToString(Orgin), myConfigDirectory, myCacheDirectory, myResourceDirectory, ActivityStatusToString(Active), KeyToString(kNone), VideoDirectory);
   SystemExec(buffer, true);
   free(buffer); 
 }
 
-void cRun::CallKey(eOrgin Orgin, eKeys Key)
+void cRun::CallKey(eOrgin Orgin, bool Active, eKeys Key)
 {
   char *buffer;
-  asprintf(&buffer, UACTIVITY_COMMAND, "key", OrginToString(Orgin), myKey.ToString(Key), myConfigDirectory, myCacheDirectory, myResourceDirectory);
+  asprintf(&buffer, UACTIVITY_COMMAND, "key", OrginToString(Orgin), myConfigDirectory, myCacheDirectory, myResourceDirectory, ActivityStatusToString(Active), KeyToString(Key), VideoDirectory);
   SystemExec(buffer, true);
   free(buffer); 
 }
@@ -67,7 +76,7 @@ void cRun::CallKey(eOrgin Orgin, eKeys Key)
 void cRun::CallWatchdog(eOrgin Orgin, bool Active)
 {
   char *buffer;
-  asprintf(&buffer, UACTIVITY_COMMAND, "watchdog", OrginToString(Orgin), ActivityStatusToString(Active), myConfigDirectory, myCacheDirectory, myResourceDirectory);
+  asprintf(&buffer, UACTIVITY_COMMAND, "watchdog", OrginToString(Orgin), myConfigDirectory, myCacheDirectory, myResourceDirectory, ActivityStatusToString(Active), KeyToString(kNone), VideoDirectory);
   SystemExec(buffer, true);
   free(buffer); 
 }

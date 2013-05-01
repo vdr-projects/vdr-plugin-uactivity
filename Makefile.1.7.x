@@ -49,7 +49,7 @@ APIVERSION = $(call PKGCFG,apiversion)
 
 ### Default values:
 
-PLUGIN_UACTIVITY_COMMAND?=vdr-uactivity -r %1$$s -o %2$$s -v %3$$s -C %4$$s -c %5$$s -R %6$$s
+PLUGIN_UACTIVITY_COMMAND?=vdr-uactivity -r \"%1$$s\" -o \"%2$$s\" -C \"%3$$s\" -c \"%4$$s\" -R \"%5$$s\" -A \"%6$$s\" -K \"%7$$s\" -V \"%8$$s\"
 
 ### The name of the distribution archive:
 

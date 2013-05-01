@@ -13,6 +13,7 @@ IRSEND="irsend -d /var/run/lirc/ya_usbir SEND_ONCE yaUsbIR_control C_WATCHDOG %s
 
 trigger_watchdog(){
   # Calculate n1, n2 and n3 values
+  OK=false
   eval $(bc <<EOF 2> /dev/null
 
 watchdog = ${WATCHDOG_TIME}
@@ -57,7 +58,7 @@ deactivate_watchdog(){
 
 
 
-case "${1}" in
+case "${UACTIVITY_ORGIN}" in
   startup)
     trigger_watchdog || exit 1
   ;;

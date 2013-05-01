@@ -1,27 +1,29 @@
 #!/bin/sh
 
 # do not use names starting with [0-9][0-9] for data files
-FLAG="${4}/key/flag.$(basename ${0})"
+FLAG_DIR="${UACTIVITY_CACHEDIRECTORY}/key/$(basename ${0}).data"
+FLAG_FILE="${FLAG_DIR}/flag"
+ 
 
-case "${1}" in
+case "${UACTIVITY_ORGIN}" in
   startup)
     # create flag directory (using cache directory)
-    mkdir -p "${4}/key/"
+    mkdir -p "${FLAG_DIR}"
     # delete flag (may leftover from previus vdr crash)
     # kepp the flag if toggle state should be keep over vdr sessions
-    rm -f "${FLAG}"
+    rm -f "${FLAG_FILE}"
   ;;
   running)
     # we are interested in Key "1"
-    if [ "${2}" = "1" ]; then
-      if [ -f "${FLAG}" ]; then
+    if [ "${UACTIVITY_INFO_KEY}" = "1" ]; then
+      if [ -f "${FLAG_FILE}" ]; then
         # here we do our "off" action
         logger -t "uactivity [key/$(basename ${0})]" "$(basename ${0}) off"
-        rm -f "${FLAG}"
+        rm -f "${FLAG_FILE}"
       else
         # here we do our "on" action
         logger -t "uactivity [key/$(basename ${0})]" "$(basename ${0}) on"
-        touch "${FLAG}"
+        touch "${FLAG_FILE}"
       fi
     fi
   ;;
