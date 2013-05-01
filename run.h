@@ -24,6 +24,6 @@ public:
   void CallWatchdog(eOrgin Orgin, bool Active);
 };
 
-extern cRun Run;
+extern cRun uactivityRun;
 
 #endif //__RUN_H
